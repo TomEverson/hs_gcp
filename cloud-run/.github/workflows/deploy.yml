@@ -1,0 +1,75 @@
+name: Deploy ETL to Cloud Run Functions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+
+env:
+  GCP_REGION:      asia-southeast1
+  GCS_BUCKET:      ${{ vars.GCS_BUCKET }}
+  GCP_PROJECT:     ${{ vars.GCP_PROJECT }}
+  BQ_DATASET:      open_library
+  BQ_TABLE:        books
+
+jobs:
+  deploy:
+    name: Deploy both functions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write    # needed for Workload Identity auth
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Auth to GCP via Workload Identity (no long-lived JSON keys) ───────
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account:            ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ── Deploy function-extract ───────────────────────────────────────────
+      - name: Deploy extract function
+        run: |
+          gcloud functions deploy etl-extract \
+            --gen2 \
+            --runtime=python312 \
+            --region=${{ env.GCP_REGION }} \
+            --source=./function-extract \
+            --entry-point=extract \
+            --trigger-http \
+            --allow-unauthenticated=false \
+            --set-env-vars="GCS_BUCKET=${{ env.GCS_BUCKET }},GCP_PROJECT=${{ env.GCP_PROJECT }},PAGE_LIMIT=5" \
+            --memory=512Mi \
+            --timeout=540s \
+            --min-instances=0 \
+            --max-instances=3
+
+      # ── Deploy function-load ──────────────────────────────────────────────
+      - name: Deploy load function
+        run: |
+          gcloud functions deploy etl-load \
+            --gen2 \
+            --runtime=python312 \
+            --region=${{ env.GCP_REGION }} \
+            --source=./function-load \
+            --entry-point=load \
+            --trigger-event-filters="type=google.cloud.storage.object.v1.finalized" \
+            --trigger-event-filters="bucket=${{ env.GCS_BUCKET }}" \
+            --set-env-vars="GCP_PROJECT=${{ env.GCP_PROJECT }},BQ_DATASET=${{ env.BQ_DATASET }},BQ_TABLE=${{ env.BQ_TABLE }}" \
+            --memory=512Mi \
+            --timeout=300s \
+            --min-instances=0 \
+            --max-instances=3
+
+      - name: Deployment summary
+        run: |
+          echo "✅ etl-extract deployed"
+          echo "✅ etl-load deployed"
+          gcloud functions describe etl-extract --region=${{ env.GCP_REGION }} --gen2 --format="value(serviceConfig.uri)"
