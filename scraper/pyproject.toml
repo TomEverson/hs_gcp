@@ -1,0 +1,24 @@
+[project]
+name = "scraper"
+version = "0.1.0"
+description = "Amazon product scraper using Selenium and undetected-chromedriver"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "pandas>=3.0.2",
+    "selenium>=4.43.0",
+    "setuptools>=82.0.1",
+    "undetected-chromedriver>=3.5.5",
+    "webdriver-manager>=4.0.2",
+]
+
+[project.scripts]
+scraper = "scraper.cli:main"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
