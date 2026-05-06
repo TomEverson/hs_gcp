@@ -9,12 +9,6 @@ wheels/
 # Virtual environments
 .venv
 
-# Output data
-amazon_output/
-*.csv
-*.html
-*.png
-
 # IDE
 .idea/
 .vscode/
