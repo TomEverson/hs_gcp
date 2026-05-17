@@ -1,0 +1,69 @@
+{
+  "info": {
+    "name": "Feedback Sentiment Pipeline",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "ingest_url",
+      "value": "https://YOUR_INGEST_URL",
+      "description": "Replace with the Cloud Run URL for the ingest function"
+    }
+  ],
+  "item": [
+    {
+      "name": "Positive Feedback",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"user_id\": \"alice\", \"message\": \"This product is absolutely fantastic! I love it.\"}"
+        },
+        "url": {
+          "raw": "{{ingest_url}}/handle",
+          "host": ["{{ingest_url}}"],
+          "path": ["handle"]
+        }
+      }
+    },
+    {
+      "name": "Neutral Feedback",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"user_id\": \"bob\", \"message\": \"The package arrived on time.\"}"
+        },
+        "url": {
+          "raw": "{{ingest_url}}/handle",
+          "host": ["{{ingest_url}}"],
+          "path": ["handle"]
+        }
+      }
+    },
+    {
+      "name": "Negative Feedback",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"user_id\": \"carol\", \"message\": \"Terrible experience. The service is completely broken and I'm very disappointed.\"}"
+        },
+        "url": {
+          "raw": "{{ingest_url}}/handle",
+          "host": ["{{ingest_url}}"],
+          "path": ["handle"]
+        }
+      }
+    }
+  ]
+}

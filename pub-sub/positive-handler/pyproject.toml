@@ -1,0 +1,12 @@
+[project]
+name = "positive-handler"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "functions-framework>=3.10.1",
+    "google-cloud-language>=2.20.0",
+    "google-cloud-secret-manager>=2.28.0",
+    "slack-sdk>=3.41.0",
+]
